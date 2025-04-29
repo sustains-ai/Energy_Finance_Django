@@ -1,0 +1,3 @@
+name,description,location,capacity_mw,project_type,capex,capex_per_mw,opex_per_year,opex_per_mw,start_date,commercial_operation_date,expected_lifetime_years,status,panel_type,panel_efficiency,num_panels,panel_capacity_w,latitude,longitude,tilt_angle,azimuth,degradation_rate,performance_ratio,land_area_acres,tracking_type
+Solar Farm Example,5.5 MW solar PV project located in California,"Sunny Valley, CA",5.5,solar,5500000,1000000,75000,15000,2025-01-01,2025-06-01,25,planning,monocrystalline,21.5,13750,400,34.5,-118.2,20,180,0.5,0.75,25,fixed
+,,,,,,,,,,,,,,,,,,,,,,,,

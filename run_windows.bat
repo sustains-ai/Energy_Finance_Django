@@ -1,0 +1,3 @@
+@echo off
+echo Starting Energy Finance Django application...
+python manage.py runserver 0.0.0.0:8000

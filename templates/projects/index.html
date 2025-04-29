@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}Energy Finance - Financial Analysis for Energy Projects{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row align-items-center">
+        <div class="col-lg-6">
+            <h1 class="display-4 fw-bold">Energy Finance</h1>
+            <p class="lead mb-4">A powerful tool for financial analysis of energy projects</p>
+            <p class="mb-4">Evaluate the financial viability of solar power and other renewable energy projects with comprehensive metrics like IRR, NPV, and LCOE.</p>
+            <div class="row mt-4 mb-3">
+                <div class="col-md-4 mb-3">
+                    <a href="{% url 'projects:project_list' %}" class="btn w-100 py-3 fw-bold d-flex align-items-center justify-content-center" style="background-color: #0ABF53; color: white; border-color: #0ABF53;">
+                        <span>View Projects</span>
+                    </a>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <a href="{% url 'projects:project_create' %}" class="btn w-100 py-3 fw-bold d-flex align-items-center justify-content-center" style="background-color: #0ABF53; color: white; border-color: #0ABF53;">
+                        <span>Create Project</span>
+                    </a>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <a href="{% url 'projects:project_import' %}" class="btn w-100 py-3 fw-bold d-flex align-items-center justify-content-center" style="background-color: #0ABF53; color: white; border-color: #0ABF53;">
+                        <span>Import Data</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 d-none d-lg-block">
+            <div class="p-5 text-center">
+                <div class="card shadow border-0">
+                    <div class="card-header text-white" style="background-color: #0ABF53;">
+                        <h3 class="card-title m-0">Key Features</h3>
+                    </div>
+                    <div class="card-body bg-white text-dark">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">Solar project financial modeling</li>
+                            <li class="list-group-item">Comprehensive cash flow analysis</li>
+                            <li class="list-group-item">Key financial metrics calculation</li>
+                            <li class="list-group-item">Energy output prediction</li>
+                            <li class="list-group-item">Customizable parameters</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5 py-5 border-top border-bottom">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow border-0">
+            <div class="card-header text-white" style="background-color: #0ABF53;">
+                <h3 class="card-title m-0">Financial Metrics</h3>
+            </div>
+            <div class="card-body bg-white text-dark">
+                <p class="card-text">Calculate key financial indicators including Net Present Value (NPV), Internal Rate of Return (IRR), Payback Period, and Levelized Cost of Energy (LCOE).</p>
+            </div>
+            <div class="card-footer bg-white">
+                <a href="#" class="btn w-100 py-2 fw-bold" style="background-color: #0ABF53; color: white; border-color: #0ABF53;">Learn More</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow border-0">
+            <div class="card-header text-white" style="background-color: #0ABF53;">
+                <h3 class="card-title m-0">Cash Flow Analysis</h3>
+            </div>
+            <div class="card-body bg-white text-dark">
+                <p class="card-text">Generate detailed year-by-year cash flow projections for your projects, with comprehensive breakdown of revenue and expenses.</p>
+            </div>
+            <div class="card-footer bg-white">
+                <a href="#" class="btn w-100 py-2 fw-bold" style="background-color: #0ABF53; color: white; border-color: #0ABF53;">Learn More</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow border-0">
+            <div class="card-header text-white" style="background-color: #0ABF53;">
+                <h3 class="card-title m-0">Energy Production</h3>
+            </div>
+            <div class="card-body bg-white text-dark">
+                <p class="card-text">Estimate energy production for solar projects based on location, system specifications, and historical weather data.</p>
+            </div>
+            <div class="card-footer bg-white">
+                <a href="#" class="btn w-100 py-2 fw-bold" style="background-color: #0ABF53; color: white; border-color: #0ABF53;">Learn More</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

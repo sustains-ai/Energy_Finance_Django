@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Import Projects{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Import Projects</h1>
+            
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Upload Project Data</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" class="form">
+                        {% csrf_token %}
+                        
+                        <div class="alert alert-info">
+                            <h5 class="alert-heading">Import Instructions</h5>
+                            <p>You can import project data from Excel (.xlsx) or CSV files. Please ensure your file follows the required format.</p>
+                            <p>Download template files:</p>
+                            <div class="d-flex gap-2">
+                                <a href="{% static 'templates/solar_project_template.xlsx' %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-file-earmark-excel"></i> Excel Template
+                                </a>
+                                <a href="{% static 'templates/solar_project_template.csv' %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-file-earmark-text"></i> CSV Template
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.file.id_for_label }}" class="form-label">Select File to Import</label>
+                            {{ form.file.errors }}
+                            <input type="file" name="{{ form.file.name }}" id="{{ form.file.id_for_label }}" 
+                                   class="form-control {% if form.file.errors %}is-invalid{% endif %}" required>
+                            <div class="form-text">Supported formats: .xlsx, .csv</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.project_type.id_for_label }}" class="form-label">Project Type</label>
+                            {{ form.project_type.errors }}
+                            <select name="{{ form.project_type.name }}" id="{{ form.project_type.id_for_label }}" 
+                                    class="form-select {% if form.project_type.errors %}is-invalid{% endif %}">
+                                <option value="solar" selected>Solar Project</option>
+                                <option value="project">General Project</option>
+                            </select>
+                            <div class="form-text">Choose the type of project to import</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input type="checkbox" name="{{ form.header_row.name }}" id="{{ form.header_row.id_for_label }}" 
+                                       class="form-check-input {% if form.header_row.errors %}is-invalid{% endif %}" 
+                                       {% if form.header_row.value %}checked{% endif %}>
+                                <label class="form-check-label" for="{{ form.header_row.id_for_label }}">
+                                    File contains header row
+                                </label>
+                                {{ form.header_row.errors }}
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a href="{% url 'projects:project_list' %}" class="btn btn-secondary me-md-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Import Project Data</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

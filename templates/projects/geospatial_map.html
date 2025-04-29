@@ -1,0 +1,352 @@
+{% extends "base.html" %}
+
+{% block title %}Project Map | Energy Finance{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""/>
+<style>
+    #map {
+        height: 700px;
+        width: 100%;
+        border-radius: 5px;
+    }
+    .map-filters {
+        margin-bottom: 20px;
+    }
+    .legend {
+        background: rgba(0, 0, 0, 0.8);
+        padding: 10px;
+        border-radius: 5px;
+        color: white;
+    }
+    .legend-item {
+        margin: 5px 0;
+    }
+    .legend-color {
+        display: inline-block;
+        width: 15px;
+        height: 15px;
+        margin-right: 5px;
+    }
+    .map-tooltip {
+        max-width: 300px;
+    }
+    .project-popup h5 {
+        margin-top: 0;
+        margin-bottom: 10px;
+        font-weight: bold;
+    }
+    .project-popup .metrics-table {
+        margin-top: 10px;
+        width: 100%;
+    }
+    .metrics-table th {
+        font-weight: normal;
+        color: #aaa;
+        text-align: left;
+    }
+    .metrics-table td {
+        font-weight: bold;
+        text-align: right;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="display-5">Energy Project Map</h1>
+        <p class="text-muted">
+            Visualize energy projects across regions with financial performance metrics.
+        </p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Project Statistics</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-3">
+                    <div class="text-muted">Total Projects</div>
+                    <div class="fw-bold">{{ project_count }}</div>
+                </div>
+                <div class="d-flex justify-content-between mb-3">
+                    <div class="text-muted">Total Capacity</div>
+                    <div class="fw-bold">{{ total_capacity|floatformat:1 }} MW</div>
+                </div>
+                <div class="d-flex justify-content-between mb-3">
+                    <div class="text-muted">Solar Projects</div>
+                    <div class="fw-bold">{{ solar_project_count }}</div>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <div class="text-muted">Solar Capacity</div>
+                    <div class="fw-bold">{{ solar_capacity|floatformat:1 }} MW</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Filter Projects</h5>
+            </div>
+            <div class="card-body">
+                <form id="filter-form">
+                    <div class="mb-3">
+                        <label for="project-type" class="form-label">Project Type</label>
+                        <select id="project-type" class="form-select">
+                            <option value="">All Types</option>
+                            <option value="solar">Solar</option>
+                            <option value="wind">Wind</option>
+                            <option value="hydro">Hydroelectric</option>
+                            <option value="storage">Storage</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="project-status" class="form-label">Status</label>
+                        <select id="project-status" class="form-select">
+                            <option value="">All Statuses</option>
+                            <option value="planning">Planning</option>
+                            <option value="construction">Construction</option>
+                            <option value="operational">Operational</option>
+                            <option value="decommissioned">Decommissioned</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="min-capacity" class="form-label">Min Capacity (MW)</label>
+                        <input type="number" id="min-capacity" class="form-control" min="0" step="1">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Apply Filters</button>
+                    <button type="button" id="reset-filters" class="btn btn-outline-secondary ms-2">Reset</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Data Layers</h5>
+            </div>
+            <div class="card-body">
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="layer-projects" checked>
+                    <label class="form-check-label" for="layer-projects">Projects</label>
+                </div>
+                
+                {% for layer in layers %}
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="layer-{{ layer.id }}" data-layer-id="{{ layer.id }}">
+                    <label class="form-check-label" for="layer-{{ layer.id }}">{{ layer.name }}</label>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-9">
+        <div class="card">
+            <div class="card-body p-0">
+                <div id="map"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize map
+        const map = L.map('map').setView([{{ map_center.lat }}, {{ map_center.lon }}], {{ map_center.zoom }});
+        
+        // Add base tile layer (dark theme)
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 19
+        }).addTo(map);
+        
+        // Project markers layer group
+        const projectsLayer = L.layerGroup().addTo(map);
+        
+        // Load project data
+        loadProjects();
+        
+        // Handle filter form submission
+        document.getElementById('filter-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            loadProjects();
+        });
+        
+        // Handle reset filters button
+        document.getElementById('reset-filters').addEventListener('click', function() {
+            document.getElementById('filter-form').reset();
+            loadProjects();
+        });
+        
+        // Toggle project layer visibility
+        document.getElementById('layer-projects').addEventListener('change', function(e) {
+            if (e.target.checked) {
+                map.addLayer(projectsLayer);
+            } else {
+                map.removeLayer(projectsLayer);
+            }
+        });
+        
+        // Function to load projects with filters
+        function loadProjects() {
+            // Get filter values
+            const projectType = document.getElementById('project-type').value;
+            const projectStatus = document.getElementById('project-status').value;
+            const minCapacity = document.getElementById('min-capacity').value;
+            
+            // Build URL with query parameters
+            let url = '{% url "projects:map_data_api" %}';
+            const params = [];
+            
+            if (projectType) params.push(`project_type=${projectType}`);
+            if (projectStatus) params.push(`status=${projectStatus}`);
+            if (minCapacity) params.push(`min_capacity=${minCapacity}`);
+            
+            if (params.length > 0) {
+                url += '?' + params.join('&');
+            }
+            
+            // Fetch data from API
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    // Clear existing markers
+                    projectsLayer.clearLayers();
+                    
+                    // Add markers for each project
+                    data.features.forEach(feature => {
+                        const props = feature.properties;
+                        const coords = feature.geometry.coordinates;
+                        
+                        // Choose marker color based on project type
+                        const markerColor = getProjectColor(props.project_type);
+                        
+                        // Create marker
+                        const marker = L.circleMarker([coords[1], coords[0]], {
+                            radius: getMarkerRadius(props.capacity_mw),
+                            color: markerColor,
+                            fillColor: markerColor,
+                            fillOpacity: 0.8,
+                            weight: 1
+                        });
+                        
+                        // Add popup with project info
+                        marker.bindPopup(createPopupContent(props));
+                        
+                        // Add tooltip with project name
+                        marker.bindTooltip(`<div class="map-tooltip">${props.name} (${props.capacity_mw} MW)</div>`, {
+                            direction: 'top',
+                            offset: [0, -10]
+                        });
+                        
+                        // Add to layer group
+                        marker.addTo(projectsLayer);
+                    });
+                })
+                .catch(error => console.error('Error loading project data:', error));
+        }
+        
+        // Function to determine project color
+        function getProjectColor(projectType) {
+            switch (projectType) {
+                case 'solar':
+                    return '#FFA500'; // Orange
+                case 'wind':
+                    return '#4CAF50'; // Green
+                case 'hydro':
+                    return '#2196F3'; // Blue
+                case 'storage':
+                    return '#9C27B0'; // Purple
+                default:
+                    return '#795548'; // Brown
+            }
+        }
+        
+        // Function to determine marker radius based on capacity
+        function getMarkerRadius(capacity) {
+            if (capacity < 5) return 5;
+            if (capacity < 20) return 7;
+            if (capacity < 50) return 9;
+            if (capacity < 100) return 11;
+            return 13;
+        }
+        
+        // Function to create popup content
+        function createPopupContent(props) {
+            const metrics = props.metrics;
+            
+            // Format metrics values
+            const formatValue = (value, suffix = '') => {
+                if (value === null || value === undefined) return 'N/A';
+                if (typeof value === 'number') {
+                    return value.toFixed(2) + suffix;
+                }
+                return value + suffix;
+            };
+            
+            let popupContent = `
+                <div class="project-popup">
+                    <h5>${props.name}</h5>
+                    <div>${props.capacity_mw} MW ${props.project_type}</div>
+                    <div class="text-muted">${props.location || ''}</div>
+                    <div class="badge bg-${getStatusBadgeColor(props.status)} mt-2">${props.status}</div>
+                    
+                    <table class="metrics-table">
+                        <tr>
+                            <th>NPV:</th>
+                            <td>${formatValue(metrics.npv, ' $')}</td>
+                        </tr>
+                        <tr>
+                            <th>IRR:</th>
+                            <td>${formatValue(metrics.irr, '%')}</td>
+                        </tr>
+                        <tr>
+                            <th>Payback:</th>
+                            <td>${formatValue(metrics.payback_period, ' years')}</td>
+                        </tr>
+                        <tr>
+                            <th>LCOE:</th>
+                            <td>${formatValue(metrics.lcoe, ' $/MWh')}</td>
+                        </tr>
+                    </table>
+                    
+                    <a href="${props.url}" class="btn btn-sm btn-primary mt-3">View Details</a>
+                </div>
+            `;
+            
+            return popupContent;
+        }
+        
+        // Function to get badge color based on status
+        function getStatusBadgeColor(status) {
+            switch (status) {
+                case 'planning':
+                    return 'secondary';
+                case 'construction':
+                    return 'warning';
+                case 'operational':
+                    return 'success';
+                case 'decommissioned':
+                    return 'danger';
+                default:
+                    return 'info';
+            }
+        }
+    });
+</script>
+{% endblock %}

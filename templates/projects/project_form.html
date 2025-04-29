@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if form.instance.id %}Edit Project{% else %}Create New Project{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">{% if form.instance.id %}Edit Project{% else %}Create New Project{% endif %}</h1>
+            
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Project Information</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="form">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.name.id_for_label }}" class="form-label">Project Name*</label>
+                                {{ form.name.errors }}
+                                <input type="text" name="{{ form.name.name }}" id="{{ form.name.id_for_label }}" 
+                                       class="form-control {% if form.name.errors %}is-invalid{% endif %}" 
+                                       value="{{ form.name.value|default:'' }}" required>
+                                <div class="form-text">Enter a descriptive name for the project</div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.location.id_for_label }}" class="form-label">Location</label>
+                                {{ form.location.errors }}
+                                <input type="text" name="{{ form.location.name }}" id="{{ form.location.id_for_label }}" 
+                                       class="form-control {% if form.location.errors %}is-invalid{% endif %}" 
+                                       value="{{ form.location.value|default:'' }}">
+                                <div class="form-text">City, state or general location</div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.capacity_mw.id_for_label }}" class="form-label">Capacity (MW)*</label>
+                                {{ form.capacity_mw.errors }}
+                                <input type="number" step="0.01" name="{{ form.capacity_mw.name }}" id="{{ form.capacity_mw.id_for_label }}" 
+                                       class="form-control {% if form.capacity_mw.errors %}is-invalid{% endif %}" 
+                                       value="{{ form.capacity_mw.value|default:'' }}" required>
+                                <div class="form-text">Nameplate capacity in megawatts (MW)</div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.project_type.id_for_label }}" class="form-label">Project Type*</label>
+                                {{ form.project_type.errors }}
+                                <select name="{{ form.project_type.name }}" id="{{ form.project_type.id_for_label }}" 
+                                        class="form-select {% if form.project_type.errors %}is-invalid{% endif %}" required>
+                                    <option value="">Select a project type</option>
+                                    <option value="solar" {% if form.project_type.value == 'solar' %}selected{% endif %}>Solar</option>
+                                    <option value="wind" {% if form.project_type.value == 'wind' %}selected{% endif %}>Wind</option>
+                                    <option value="hydro" {% if form.project_type.value == 'hydro' %}selected{% endif %}>Hydro</option>
+                                    <option value="geothermal" {% if form.project_type.value == 'geothermal' %}selected{% endif %}>Geothermal</option>
+                                    <option value="biomass" {% if form.project_type.value == 'biomass' %}selected{% endif %}>Biomass</option>
+                                    <option value="storage" {% if form.project_type.value == 'storage' %}selected{% endif %}>Storage</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                                {{ form.description.errors }}
+                                <textarea name="{{ form.description.name }}" id="{{ form.description.id_for_label }}" 
+                                          class="form-control {% if form.description.errors %}is-invalid{% endif %}" 
+                                          rows="4">{{ form.description.value|default:'' }}</textarea>
+                                <div class="form-text">Brief description of the project</div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.status.id_for_label }}" class="form-label">Status</label>
+                                {{ form.status.errors }}
+                                <select name="{{ form.status.name }}" id="{{ form.status.id_for_label }}" 
+                                        class="form-select {% if form.status.errors %}is-invalid{% endif %}">
+                                    <option value="planning" {% if form.status.value == 'planning' %}selected{% endif %}>Planning</option>
+                                    <option value="construction" {% if form.status.value == 'construction' %}selected{% endif %}>Construction</option>
+                                    <option value="operational" {% if form.status.value == 'operational' %}selected{% endif %}>Operational</option>
+                                    <option value="decommissioned" {% if form.status.value == 'decommissioned' %}selected{% endif %}>Decommissioned</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <h5 class="mt-4 mb-3">Financial Information</h5>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.capex.id_for_label }}" class="form-label">Capital Expenditure (Total)</label>
+                                {{ form.capex.errors }}
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" step="0.01" name="{{ form.capex.name }}" id="{{ form.capex.id_for_label }}" 
+                                           class="form-control {% if form.capex.errors %}is-invalid{% endif %}" 
+                                           value="{{ form.capex.value|default:'' }}">
+                                </div>
+                                <div class="form-text">Total capital expenditure</div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.capex_per_mw.id_for_label }}" class="form-label">Capital Expenditure per MW</label>
+                                {{ form.capex_per_mw.errors }}
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" step="0.01" name="{{ form.capex_per_mw.name }}" id="{{ form.capex_per_mw.id_for_label }}" 
+                                           class="form-control {% if form.capex_per_mw.errors %}is-invalid{% endif %}" 
+                                           value="{{ form.capex_per_mw.value|default:'' }}">
+                                    <span class="input-group-text">/MW</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.opex_per_year.id_for_label }}" class="form-label">Operating Expenditure (per Year)</label>
+                                {{ form.opex_per_year.errors }}
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" step="0.01" name="{{ form.opex_per_year.name }}" id="{{ form.opex_per_year.id_for_label }}" 
+                                           class="form-control {% if form.opex_per_year.errors %}is-invalid{% endif %}" 
+                                           value="{{ form.opex_per_year.value|default:'' }}">
+                                    <span class="input-group-text">/year</span>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.opex_per_mw.id_for_label }}" class="form-label">Operating Expenditure per MW per Year</label>
+                                {{ form.opex_per_mw.errors }}
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" step="0.01" name="{{ form.opex_per_mw.name }}" id="{{ form.opex_per_mw.id_for_label }}" 
+                                           class="form-control {% if form.opex_per_mw.errors %}is-invalid{% endif %}" 
+                                           value="{{ form.opex_per_mw.value|default:'' }}">
+                                    <span class="input-group-text">/MW/year</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h5 class="mt-4 mb-3">Project Timeline</h5>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.start_date.id_for_label }}" class="form-label">Start Date</label>
+                                {{ form.start_date.errors }}
+                                <input type="date" name="{{ form.start_date.name }}" id="{{ form.start_date.id_for_label }}" 
+                                       class="form-control {% if form.start_date.errors %}is-invalid{% endif %}" 
+                                       value="{{ form.start_date.value|default:''|date:'Y-m-d' }}">
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.commercial_operation_date.id_for_label }}" class="form-label">Commercial Operation Date</label>
+                                {{ form.commercial_operation_date.errors }}
+                                <input type="date" name="{{ form.commercial_operation_date.name }}" id="{{ form.commercial_operation_date.id_for_label }}" 
+                                       class="form-control {% if form.commercial_operation_date.errors %}is-invalid{% endif %}" 
+                                       value="{{ form.commercial_operation_date.value|default:''|date:'Y-m-d' }}">
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.expected_lifetime_years.id_for_label }}" class="form-label">Expected Lifetime (Years)</label>
+                                {{ form.expected_lifetime_years.errors }}
+                                <input type="number" name="{{ form.expected_lifetime_years.name }}" id="{{ form.expected_lifetime_years.id_for_label }}" 
+                                       class="form-control {% if form.expected_lifetime_years.errors %}is-invalid{% endif %}" 
+                                       value="{{ form.expected_lifetime_years.value|default:'25' }}">
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a href="{% url 'projects:project_list' %}" class="btn btn-secondary me-md-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Save Project</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
